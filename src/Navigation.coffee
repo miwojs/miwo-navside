@@ -15,14 +15,12 @@ class Navigation extends Miwo.Container
 		return
 
 
-	addItem: (name, text) ->
-		return @add name, new Item
-			text: text
+	addItem: (name, config) ->
+		return @add(name, new Item(config))
 
 
-	addItemGroup: (name, text) ->
-		return @add name, new ItemGroup
-			text: text
+	addItemGroup: (name, config) ->
+		return @add(name, new ItemGroup(config))
 
 
 	addedComponentDeep: (component) ->

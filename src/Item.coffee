@@ -6,10 +6,13 @@ class Item extends Miwo.Component
 	text: ''
 	active: false
 	role: 'presentation'
+	badge: null
 
 
 	doRender: ->
-		@el.set 'html', '<a href="#" role="menuitem"><i class="navside-icon '+@icon+'"></i><span>'+@text+'</span></a>'
+		inner = '<i class="navside-icon '+@icon+'"></i><span>'+@text+'</span>'
+		inner += '<span class="badge">'+@badge+'</span>' if @badge
+		@el.set('html', '<a href="#" role="menuitem">'+inner+'</a>')
 		return
 
 
@@ -28,7 +31,6 @@ class Item extends Miwo.Component
 		@el.toggleClass('active', active)
 		@emit('active', this)  if !silent
 		return
-
 
 
 module.exports = Item

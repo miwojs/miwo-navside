@@ -11,9 +11,8 @@ class ItemGroup extends Miwo.Container
 	role: 'presentation'
 
 
-	addItem: (name, text) ->
-		return @add name, new Item
-			text: text
+	addItem: (name, config) ->
+		return @add(name, new Item(config))
 
 
 	beforeRender: ->

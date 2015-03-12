@@ -9,14 +9,7 @@ class Item extends Miwo.Component
 	badge: null
 
 
-	doRender: ->
-		inner = '<i class="navside-icon '+@icon+'"></i><span>'+@text+'</span>'
-		inner += '<span class="badge">'+@badge+'</span>' if @badge
-		@el.set('html', '<a href="#" role="menuitem">'+inner+'</a>')
-		return
-
-
-	afterRender: ->
+	beforeRender: ->
 		super
 		@el.on 'click', (event)=>
 			event.stop()
@@ -25,11 +18,23 @@ class Item extends Miwo.Component
 		return
 
 
+	doRender: ->
+		inner = '<i class="'+@icon+'"></i><span>'+@text+'</span>'
+		inner += '<span class="badge">'+@badge+'</span>' if @badge
+		@el.set('html', '<a href="#" role="menuitem">'+inner+'</a>')
+		return
+
+
 	setActive: (active, silent) ->
 		if @active is active then return
 		@active = active
 		@el.toggleClass('active', active)
 		@emit('active', this)  if !silent
+		return
+
+
+	setBadge: (@badge) ->
+		@redraw()
 		return
 
 

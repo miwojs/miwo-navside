@@ -26,8 +26,8 @@ var paths = {
 		distDir: './dist/less/'
 	},
 	watch: {
-		coffee: ['src/**/*.coffee'],
-		less: ['less/*.less']
+		coffee: 'src/**/*.coffee',
+		less: 'less/*.less'
 	}
 };
 
@@ -48,7 +48,7 @@ gulp.task('default', ['build']);
 
 gulp.task("watch", function() {
 	gulp.start('build');
-	gulp.watch(paths.watch.less, ['compile-css']);
+	gulp.watch(paths.watch.less, ['compile-css', 'copy-assets']);
 	gulp.watch(paths.watch.coffee, ['compile-js']);
 });
 
@@ -60,6 +60,10 @@ gulp.task('dist', function(cb) {
 	sequence('build', ['minify-js', 'minify-css'], cb);
 });
 
+gulp.task('copy-assets', function() {
+	return gulp.src(paths.assets.src)
+		.pipe(gulp.dest(paths.assets.distDir));
+});
 
 gulp.task('compile-js', function() {
 	return gulp.src(paths.js.src, { read: false })
@@ -67,11 +71,6 @@ gulp.task('compile-js', function() {
 		.pipe(browserify({transform: ['caching-coffeeify'], extensions: ['.coffee']}))
 		.pipe(rename(paths.js.target))
 		.pipe(gulp.dest(paths.js.distDir));
-});
-
-gulp.task('copy-assets', function() {
-	return gulp.src(paths.assets.src)
-		.pipe(gulp.dest(paths.assets.distDir));
 });
 
 gulp.task('minify-js', function() {

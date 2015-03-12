@@ -18,7 +18,7 @@ class ItemGroup extends Miwo.Container
 	beforeRender: ->
 		super
 		@el.set 'html',
-		'<div class="navside-item"><a role="menuitem" miwo-events="click:onItemClick" href="#"><i class="navside-icon '+@icon+'"></i><span>'+@text+'</span><i miwo-reference="switchiconEl" class="switchicon glyphicon"></i></a></div>'+
+		'<div class="navside-item"><a role="menuitem" miwo-events="click:onItemClick" href="#"><i class="'+@icon+'"></i><span>'+@text+'</span><i miwo-reference="switchEl" class="switch glyphicon"></i></a></div>'+
 		'<div class="navside-items" role="menu" miwo-reference="contentEl"></div>'
 		return
 
@@ -43,8 +43,8 @@ class ItemGroup extends Miwo.Container
 	setOpened: (opened, silent) ->
 		@opened = opened
 		@contentEl.setVisible(opened)
-		@switchiconEl.toggleClass('glyphicon-chevron-down', !opened)
-		@switchiconEl.toggleClass('glyphicon-chevron-up', opened)
+		@switchEl.toggleClass('glyphicon-chevron-down', !opened)
+		@switchEl.toggleClass('glyphicon-chevron-up', opened)
 		(if opened then @emit('open', this) else @emit('close', this)) if !silent
 		return
 

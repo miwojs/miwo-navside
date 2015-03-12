@@ -1,12 +1,14 @@
+Header = require './Header'
 Item = require './Item'
 ItemGroup = require './ItemGroup'
 
 
-class Navigation extends Miwo.Container
+class Navigation extends Miwo.panel.Pane
 
 	componentCls: 'navside'
 	active: null
 	role: 'navigation'
+	scrollable: true
 
 
 	afterInit: ->
@@ -21,6 +23,10 @@ class Navigation extends Miwo.Container
 
 	addItemGroup: (name, config) ->
 		return @add(name, new ItemGroup(config))
+
+
+	addHeader: (name, config) ->
+		return @add(name, new Header(config))
 
 
 	addedComponentDeep: (component) ->
@@ -47,6 +53,7 @@ class Navigation extends Miwo.Container
 
 	onItemClick: (item) ->
 		item.setActive(true)  if @active isnt item
+		miwo.redirect(item.target)  if item.target && !@preventHashChange
 		return
 
 
@@ -55,17 +62,16 @@ class Navigation extends Miwo.Container
 		@active.setActive(false, true) if @active
 		@active = item
 		@emit('active', this, item)
-		document.location.hash = item.target  if item.target && !@preventHashChange
 		return
 
 
-	onItemGroupOpen: (itemgroup) ->
-		@emit('open', this, itemgroup)
+	onItemGroupOpen: (itemGroup) ->
+		@emit('open', this, itemGroup)
 		return
 
 
-	onItemGroupClose: (itemgroup) ->
-		@emit('close', this, itemgroup)
+	onItemGroupClose: (itemGroup) ->
+		@emit('close', this, itemGroup)
 		return
 
 
@@ -82,7 +88,7 @@ class Navigation extends Miwo.Container
 
 	setActivateByTarget: (target) ->
 		if !target then return
-		for component in @findComponents(true, {xtype: 'navsideitem'})
+		for component in @findAll('navsideitem')
 			if target.indexOf(component.target) >= 0
 				@preventHashChange = true
 				component.setActive(true)

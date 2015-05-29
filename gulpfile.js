@@ -3,95 +3,96 @@ var gutil = require('gulp-util');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var browserify = require('gulp-browserify');
-var optimizeBrowserify = require('gulp-optimizebrowserify');
-var plumber = require('gulp-plumber');
+var optimizeBrowserify = require('gulp-optimize-browserify');
 var less = require('gulp-less');
 var minifycss = require('gulp-minify-css');
-var sequence = require('run-sequence');
 
 
 var paths = {
 	css: {
 		src: 'less/index.less',
-		target: 'miwo-navside.css',
 		distDir: './dist/css/'
 	},
 	js: {
 		src: 'src/index.coffee',
-		target: 'miwo-navside.js',
 		distDir: './dist/js/'
 	},
 	assets: {
-		src: 'less/*.less',
+		src: 'less/**/*',
 		distDir: './dist/less/'
 	},
 	watch: {
-		coffee: 'src/**/*.coffee',
-		less: 'less/*.less'
+		coffee: ['src/**/*.coffee'],
+		less: ['less/*.less']
 	}
 };
 
 
 var pipes = {
-	createPlumber: function() {
-		return plumber(function(error) {
-			gutil.log(gutil.colors.red(error.message));
+	createBrowserify: function(options) {
+		var pipe = browserify(options);
+		pipe.on('error', function(err) {
+			gutil.log(err);
 			gutil.beep();
-			this.emit('end');
 		});
+		return pipe;
+	},
+	createLess: function(options) {
+		var pipe = less(options)
+		pipe.on('error', function(err) {
+			gutil.log(err);
+			gutil.beep();
+		});
+		return pipe;
 	}
 };
 
 
 
-gulp.task('default', ['build']);
+gulp.task('default', ['build', 'watch']);
+
+gulp.task('build', ['compile-js', 'compile-css', 'copy-assets']);
+
+gulp.task('dist', ['compile-js', 'compile-css', 'minify-js', 'minify-css', 'copy-assets']);
 
 gulp.task("watch", function() {
-	gulp.start('build');
-	gulp.watch(paths.watch.less, ['compile-css', 'copy-assets']);
 	gulp.watch(paths.watch.coffee, ['compile-js']);
+	gulp.watch(paths.watch.less, ['compile-css', 'copy-assets']);
 });
 
-gulp.task('build', function(cb) {
-	sequence(['compile-js', 'compile-css', 'copy-assets'], cb);
-});
-
-gulp.task('dist', function(cb) {
-	sequence('build', ['minify-js', 'minify-css'], cb);
-});
 
 gulp.task('copy-assets', function() {
 	return gulp.src(paths.assets.src)
-		.pipe(gulp.dest(paths.assets.distDir));
-});
-
-gulp.task('compile-js', function() {
-	return gulp.src(paths.js.src, { read: false })
-		.pipe(pipes.createPlumber())
-		.pipe(browserify({transform: ['caching-coffeeify'], extensions: ['.coffee']}))
-		.pipe(rename(paths.js.target))
-		.pipe(gulp.dest(paths.js.distDir));
-});
-
-gulp.task('minify-js', function() {
-	return gulp.src(paths.js.distDir+paths.js.target)
-		.pipe(optimizeBrowserify())
-		.pipe(uglify())
-		.pipe(rename({suffix:'.min'}))
-		.pipe(gulp.dest(paths.js.distDir));
+		.pipe(gulp.dest(paths.assets.distDir))
 });
 
 gulp.task('compile-css', function() {
 	return gulp.src(paths.css.src)
-		.pipe(pipes.createPlumber())
-		.pipe(less())
-		.pipe(rename(paths.css.target))
+		.pipe(pipes.createLess())
+		.pipe(rename('miwo-navside.css'))
 		.pipe(gulp.dest(paths.css.distDir));
 });
 
+gulp.task('compile-js', function() {
+	return gulp.src(paths.js.src, { read: false })
+		.pipe(pipes.createBrowserify({transform: ['caching-coffeeify'], extensions: ['.coffee'], debug: true}))
+		.pipe(rename('miwo-navside.js'))
+		.pipe(gulp.dest(paths.js.distDir));
+});
+
 gulp.task('minify-css', function() {
-	return gulp.src(paths.css.distDir+paths.css.target)
+	return gulp.src(paths.css.src)
+		.pipe(pipes.createLess())
 		.pipe(minifycss({keepBreaks:true}))
-		.pipe(rename({suffix:'.min'}))
+		.pipe(rename('miwo-navside.min.css'))
 		.pipe(gulp.dest(paths.css.distDir));
+});
+
+gulp.task('minify-js', function() {
+	return gulp.src(paths.js.src, { read: false })
+		.pipe(pipes.createBrowserify({transform: ['caching-coffeeify'], extensions: ['.coffee']}))
+		.pipe(optimizeBrowserify())
+		.pipe(uglify())
+		.pipe(rename('miwo-navside.min.js'))
+		.pipe(gulp.dest(paths.js.distDir));
 });
